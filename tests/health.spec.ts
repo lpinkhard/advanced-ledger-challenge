@@ -1,7 +1,7 @@
 /**
  * @file tests/health.spec.ts
  * @description
- * Validates the /api/health handler returns expected structure and values
+ * Validates the /health handler returns expected structure and values
  */
 
 import { setTestDb } from "../src/lib/mongo";

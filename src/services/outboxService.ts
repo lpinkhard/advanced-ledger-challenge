@@ -43,7 +43,7 @@ function resolveTargetUrl(override?: string): string {
   }
   const path = envTarget && envTarget.startsWith("/")
     ? envTarget
-    : "/api/events";
+    : "/events";
 
   const vercelHost = process.env.VERCEL_URL?.trim();
   if (vercelHost) {

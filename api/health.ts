@@ -11,7 +11,7 @@ import { json, error, allowMethods, methodNotAllowed } from "./_util";
 export const config = { runtime: "nodejs" };
 
 /**
- * Route handler for `GET /api/health`
+ * Route handler for `GET /health`
  */
 export default async function handler(req: Request): Promise<Response> {
   if (!allowMethods(req, ["GET"])) return methodNotAllowed(["GET"]);

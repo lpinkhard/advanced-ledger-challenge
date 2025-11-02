@@ -6,6 +6,7 @@
 
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
+import type { AccountDoc } from "../src/domain/docs";
 dotenv.config();
 
 async function main() {
@@ -23,7 +24,7 @@ async function main() {
   ];
 
   for (const acct of seedAccounts) {
-    await db.collection("accounts").updateOne(
+    await db.collection<AccountDoc>("accounts").updateOne(
       { _id: acct._id },
       {
         $setOnInsert: { _id: acct._id, createdAt: now },

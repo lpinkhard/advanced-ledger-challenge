@@ -11,7 +11,8 @@
     { "src": "^/journal$", "dest": "dist/api/journal.js" },
     { "src": "^/health$", "dest": "dist/api/health.js" },
     { "src": "^/events$", "dest": "dist/api/events.js" },
-    { "src": "^/outbox/process$", "dest": "dist/api/outbox/process.js" }
+    { "src": "^/outbox/process$", "dest": "dist/api/outbox/process.js" },
+    { "src": "^/accounts/([^/]+)/history$", "dest": "dist/api/accounts/history.js?id=$1" }
   ],
 
   "crons": [

@@ -19,7 +19,7 @@ import { ZodError, type ZodIssue } from "zod";
 export const config = { runtime: "nodejs" };
 
 /**
- * Route handler for `POST /api/journal`
+ * Route handler for `POST /journal`
  */
 export default async function handler(req: Request): Promise<Response> {
   if (!allowMethods(req, ["POST"])) {

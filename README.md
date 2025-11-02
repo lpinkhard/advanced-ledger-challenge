@@ -41,7 +41,7 @@ Transitions are strictly validated by `src/domain/stateMachine.ts`.
 
 ## API Endpoints
 
-### POST `/api/journal`
+### POST `/journal`
 
 Posts a new journal entry.
 
@@ -82,7 +82,7 @@ Posts a new journal entry.
 
 ---
 
-### GET `/api/accounts/:id/history`
+### GET `/accounts/:id/history`
 
 Returns all transitions for a given account.
 
@@ -102,14 +102,14 @@ Returns all transitions for a given account.
 
 ---
 
-### POST `/api/events`
+### POST `/events`
 
 Mock endpoint for event dispatch acknowledgements.
 Ensures **exactly-once semantics** by inserting an `events_acks` record per journal. Duplicates are safely ignored.
 
 ---
 
-### GET `/api/health`
+### GET `/health`
 
 Health check and observability endpoint.
 
@@ -137,7 +137,7 @@ The outbox pattern guarantees reliable, exactly-once event delivery even in case
 **Behavior**
 
 * Scans for due items (`status: pending`, `nextAttemptAt ≤ now`)
-* Dispatches events to `/api/events`
+* Dispatches events to `/events`
 * Retries on failures with **exponential backoff**
 * Marks items as `sent` on success
 * Records metrics for successes and retries
@@ -176,7 +176,7 @@ Every operation emits:
     * `ledger_journal_total{status="ok|fail"}`
     * `ledger_outbox_retries_total{result="success|retry"}`
 
-The `/api/health` endpoint aggregates and reports key metrics.
+The `/health` endpoint aggregates and reports key metrics.
 
 ---
 
@@ -271,15 +271,15 @@ curl -s http://localhost:3000/health \
 sequenceDiagram
   autonumber
   participant C as Client
-  participant API as /api/journal
+  participant API as /journal
   participant DB as MongoDB (txn)
   participant LE as ledger_entries
   participant OB as outbox
   participant PROC as outbox processor
-  participant EVT as /api/events
+  participant EVT as /events
   participant ACK as events_acks
 
-  C->>API: POST /api/journal (balanced, idempotent)
+  C->>API: POST /journal (balanced, idempotent)
   API->>DB: beginTransaction()
   API->>DB: validate state transitions
   API->>DB: apply bucket deltas (guarded)
@@ -361,16 +361,16 @@ src/
 
 ## Alignment with Challenge Requirements
 
-| Requirement                                                                 | Implemented                         |
-| --------------------------------------------------------------------------- |-------------------------------------|
+| Requirement                                                                 | Implemented                       |
+| --------------------------------------------------------------------------- |-----------------------------------|
 | Multi-step transitions (`reserve`, `lock`, `finalize`, `release`, `revert`) | `stateMachine.ts`                 |
 | Atomic transactions                                                         | MongoDB sessions                  |
 | Idempotent journals                                                         | `idempotencyKey` & unique indexes |
 | Write-ahead ledger entries                                                  | `ledger_entries`                  |
 | Outbox dispatch + retry/backoff                                             | `processOutbox`                   |
-| Exactly-once event delivery                                                 | `/api/events` + `events_acks`     |
+| Exactly-once event delivery                                                 | `/events` + `events_acks`         |
 | Chaos/failure simulation                                                    | `CHAOS_PROB`                      |
-| Observability & metrics                                                     | `/api/health`                     |
+| Observability & metrics                                                     | `/health`                         |
 | End-to-end tests                                                            | `tests/*.spec.ts`                 |
 
 ---

@@ -1,26 +1,26 @@
 /**
- * @file api/accounts/[id]/history.ts
+ * @file api/accounts/history.ts
  * @description
  * HTTP handler for `GET /accounts/:id/history`.
  * Returns the full chronological ledger transition history for a given account.
  */
 
-import { getDb } from "../../../src/lib/mongo";
-import { accountHistory } from "../../../src/services/journalService";
-import { json, error, allowMethods, methodNotAllowed } from "../../_util";
+import { getDb } from "../../src/lib/mongo";
+import { accountHistory } from "../../src/services/journalService";
+import { json, error, allowMethods, methodNotAllowed } from "../_util";
 
 export const config = { runtime: "nodejs" };
 
 /**
- * Route handler for `GET /api/accounts/:id/history`
+ * Route handler for `GET /accounts/:id/history`
  */
 export default async function handler(
-  req: Request,
-  ctx: { params: { id: string } }
+  req: Request
 ): Promise<Response> {
   if (!allowMethods(req, ["GET"])) return methodNotAllowed(["GET"]);
 
-  const accountId = ctx?.params?.id;
+  const url = new URL(req.url);
+  const accountId = url.searchParams.get("id");
   if (!accountId) return error("Invalid accountId", 400);
 
   try {

@@ -14,7 +14,7 @@ import { processOutbox } from "../services/outboxService";
 import { expressWrap } from "./expressWrap";
 
 import journalHandler from "../../api/journal";
-import historyHandler from "../../api/accounts/[id]/history";
+import historyHandler from "../../api/accounts/history";
 import processHandler from "../../api/outbox/process";
 import eventsHandler from "../../api/events";
 import healthHandler from "../../api/health";
