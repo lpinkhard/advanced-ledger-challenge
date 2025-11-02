@@ -4,8 +4,8 @@
  * Health check endpoint for the ledger system
  */
 
-import { getDb, isMongoHealthy } from "../src/lib/mongo";
-import { buildHealthReport } from "../src/util/log";
+import { getDb, isMongoHealthy } from "./_core/lib/mongo";
+import { buildHealthReport } from "./_core/util/log";
 import { json, error, allowMethods, methodNotAllowed } from "./_util";
 
 /**

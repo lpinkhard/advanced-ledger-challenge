@@ -4,8 +4,8 @@
  * HTTP handler for triggering the outbox dispatcher once
  */
 
-import { getDb } from "../../src/lib/mongo";
-import { processOutbox } from "../../src/services/outboxService";
+import { getDb } from "../_core/lib/mongo";
+import { processOutbox } from "../_core/services/outboxService";
 import {
   requireKey,
   json,

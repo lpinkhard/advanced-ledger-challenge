@@ -5,13 +5,13 @@
  * in-memory MongoDB replica set.
  */
 
-import { setTestDb } from "../src/lib/mongo";
+import { setTestDb } from "../api/_core/lib/mongo";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { MongoClient, Db } from "mongodb";
-import { postJournal, accountHistory } from "../src/services/journalService";
-import { validateTransition } from "../src/domain/stateMachine";
-import type { AccountDoc, JournalDoc, LedgerEntryDoc, OutboxDoc } from "../src/domain/docs";
+import { postJournal, accountHistory } from "../api/_core/services/journalService";
+import { validateTransition } from "../api/_core/domain/stateMachine";
+import type { AccountDoc, JournalDoc, LedgerEntryDoc, OutboxDoc } from "../api/_core/domain/docs";
 
 let replset: MongoMemoryReplSet;
 let client: MongoClient;

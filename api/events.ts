@@ -4,9 +4,9 @@
  * Local mock consumer endpoint for ledger outbox events
  */
 
-import { getDb } from "../src/lib/mongo";
+import { getDb } from "./_core/lib/mongo";
 import { json, error, allowMethods, methodNotAllowed } from "./_util";
-import { log } from "../src/util/log";
+import { log } from "./_core/util/log";
 
 export default async function handler(req: Request): Promise<Response> {
   if (!allowMethods(req, ["POST"])) return methodNotAllowed(["POST"]);

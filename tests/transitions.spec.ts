@@ -4,12 +4,12 @@
  * Transition flow tests
  */
 
-import { setTestDb } from "../src/lib/mongo";
+import { setTestDb } from "../api/_core/lib/mongo";
 import { beforeAll, afterAll, afterEach, describe, it, expect } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { MongoClient, Db } from "mongodb";
-import { postJournal } from "../src/services/journalService";
-import type {AccountDoc, JournalDoc, LedgerEntryDoc, OutboxDoc} from "../src/domain/docs";
+import { postJournal } from "../api/_core/services/journalService";
+import type {AccountDoc, JournalDoc, LedgerEntryDoc, OutboxDoc} from "../api/_core/domain/docs";
 
 let replset: MongoMemoryReplSet;
 let client: MongoClient;

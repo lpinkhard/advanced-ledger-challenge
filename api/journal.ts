@@ -4,8 +4,8 @@
  * HTTP handler for `POST /journal`
  */
 
-import { getDb } from "../src/lib/mongo";
-import { postJournal } from "../src/services/journalService";
+import { getDb } from "./_core/lib/mongo";
+import { postJournal } from "./_core/services/journalService";
 import {
   requireKey,
   json,
