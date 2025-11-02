@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
+    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
+    "outDir": "dist",
+    "rootDir": ".",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "strict": true,
-    "types": ["node"],
-    "baseUrl": "."
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["api", "src", "tests"]
+  "include": ["api/**/*.ts", "src/**/*.ts", "scripts/**/*.ts"]
 }

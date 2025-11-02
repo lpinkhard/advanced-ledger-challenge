@@ -10,7 +10,6 @@
   },
   "scripts": {
     "dev": "tsx src/server/app.ts",
-    "dev:server": "tsx src/server/app.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server/app.js",
     "test": "vitest run",
