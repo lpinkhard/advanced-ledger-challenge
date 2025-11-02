@@ -4,11 +4,11 @@
  * Outbox processing tests
  */
 
-import { setTestDb } from "../api/_core/lib/mongo";
+import { setTestDb } from "../src/lib/mongo";
 import { beforeAll, afterAll, afterEach, describe, it, expect, vi } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { MongoClient, Db } from "mongodb";
-import { processOutbox } from "../api/_core/services/outboxService";
+import { processOutbox } from "../src/services/outboxService";
 import eventsHandler from "../api/events";
 
 let replset: MongoMemoryReplSet;

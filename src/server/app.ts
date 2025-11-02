@@ -9,11 +9,9 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import path from "node:path";
-import { getDb } from "../../api/_core/lib/mongo";
-import { processOutbox } from "../../api/_core/services/outboxService";
+import { getDb } from "../lib/mongo";
+import { processOutbox } from "../services/outboxService";
 import { expressWrap } from "./expressWrap";
-import { fileURLToPath } from "url";
 
 import journalHandler from "../../api/journal";
 import historyHandler from "../../api/accounts/history";
@@ -23,6 +21,8 @@ import healthHandler from "../../api/health";
 
 import dotenv from "dotenv";
 dotenv.config();
+
+import path from "node:path";
 
 // Config
 const PORT = parseInt(process.env.PORT || "3000", 10);
@@ -38,8 +38,6 @@ app.use(express.json({ limit: "1mb" }));
 app.use(morgan("combined"));
 app.use(rateLimit({ windowMs: 60_000, max: 120 }));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, "../../public");
 app.use(express.static(publicDir));
 

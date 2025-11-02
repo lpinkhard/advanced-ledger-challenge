@@ -5,8 +5,8 @@
  * Returns the full chronological ledger transition history for a given account.
  */
 
-import { getDb } from "../_core/lib/mongo";
-import { accountHistory } from "../_core/services/journalService";
+import { getDb } from "../../src/lib/mongo";
+import { accountHistory } from "../../src/services/journalService";
 import { json, error, allowMethods, methodNotAllowed } from "../_util";
 
 type Ctx = { params?: { id?: string } };

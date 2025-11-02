@@ -4,7 +4,7 @@
  * Validates the /health handler returns expected structure and values
  */
 
-import { setTestDb } from "../api/_core/lib/mongo";
+import { setTestDb } from "../src/lib/mongo";
 import { beforeAll, afterAll, afterEach, describe, it, expect } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { MongoClient, Db } from "mongodb";

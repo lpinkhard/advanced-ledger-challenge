@@ -6,7 +6,7 @@
 
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
-import type { AccountDoc } from "../api/_core/domain/docs";
+import type { AccountDoc } from "../src/domain/docs";
 dotenv.config();
 
 async function main() {
