@@ -9,6 +9,7 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import path from "node:path";
 import { getDb } from "../lib/mongo";
 import { processOutbox } from "../services/outboxService";
 import { expressWrap } from "./expressWrap";
@@ -21,8 +22,6 @@ import healthHandler from "../../api/health";
 
 import dotenv from "dotenv";
 dotenv.config();
-
-import path from "node:path";
 
 // Config
 const PORT = parseInt(process.env.PORT || "3000", 10);
