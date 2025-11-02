@@ -21,7 +21,7 @@
   "crons": [
     {
       "path": "/api/outbox/process",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 0 * * *"
     }
   ],
   "env": {
