@@ -23,12 +23,5 @@
       "path": "/api/outbox/process",
       "schedule": "0 0 * * *"
     }
-  ],
-  "env": {
-    "MONGODB_URI": "@ledger-mongodb-uri",
-    "DB_NAME": "ledger",
-    "API_KEY": "@ledger-api-key",
-    "OUTBOX_TARGET": "https://advanced-ledger-challenge.vercel.app/api/events",
-    "OUTBOX_TIMEOUT_MS": "5000"
-  }
+  ]
 }
