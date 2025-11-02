@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Advanced Ledger Challenge – Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root { --bg:#0b0d10; --card:#11151a; --muted:#9aa4b2; --text:#e6edf3; --accent:#7cc4ff; --border:#1f242b; }
+        html,body { margin:0; padding:0; background:var(--bg); color:var(--text); font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji"; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { padding: 2.5rem 1rem 1rem; text-align:center; }
+        header h1 { margin:0; font-size: 2rem; }
+        main { max-width: 980px; margin: 0 auto; padding: 1rem; }
+        section { background: var(--card); border:1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+        h2, h3, h4 { margin-top: 0; }
+        hr { border:0; border-top:1px solid var(--border); margin: 1rem 0; }
+        code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+        pre { background:#0a0d12; border:1px solid var(--border); border-radius:10px; padding:1rem; overflow:auto; }
+        code { background:#0a0d12; border:1px solid var(--border); border-radius:6px; padding:0.15rem 0.35rem; }
+        table { width:100%; border-collapse: collapse; margin: 0.5rem 0 0; }
+        th, td { text-align:left; border-bottom:1px solid var(--border); padding: .6rem .5rem; vertical-align: top; }
+        th { color:#c7d1db; }
+        .small { color: var(--muted); font-size: .95rem; }
+        .kbd { border:1px solid var(--border); border-bottom-width:2px; padding:.15rem .35rem; border-radius:.4rem; background:#0a0d12; }
+        .pill { display:inline-block; border:1px solid var(--border); background:#0d1117; padding:.15rem .5rem; border-radius:999px; font-size:.85rem; color:var(--muted); }
+        .grid { display:grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); }
+        nav { max-width:980px; margin: 0 auto; padding: 0 1rem 1rem; }
+        nav .grid a { background: var(--card); border:1px solid var(--border); border-radius:12px; padding:.8rem 1rem; display:block; }
+        footer { color:var(--muted); text-align:center; padding:3rem 1rem; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Advanced Ledger Challenge</h1>
+    <p class="small">Multi-entity transactional ledger with strict consistency, idempotent journals, and event-driven outbox.</p>
+</header>
+
+<nav aria-label="On this page">
+    <div class="grid">
+        <a href="#overview">Overview</a>
+        <a href="#features-objectives">Features &amp; Objectives</a>
+        <a href="#state-machine">State Machine &amp; Transitions</a>
+        <a href="#api-endpoints">API Endpoints</a>
+        <a href="#outbox-processor">Outbox Processor</a>
+        <a href="#chaos-mode">Chaos Mode</a>
+        <a href="#observability">Observability</a>
+        <a href="#database-seeding">Database Seeding</a>
+        <a href="#quick-demo">Quick Demo</a>
+        <a href="#running">Running the Project</a>
+        <a href="#folder-structure">Folder Structure</a>
+        <a href="#alignment">Alignment with Requirements</a>
+    </div>
+</nav>
+
+<main>
+    <section id="overview" aria-labelledby="h-overview">
+        <h2 id="h-overview">Overview</h2>
+        <p>
+            This project implements a multi-entity transactional ledger that maintains strict consistency across multiple accounts and supports multi-step state transitions, idempotent journals, and event-driven outbox dispatch with retries.
+        </p>
+        <p>
+            It demonstrates an architecture suitable for financial systems, ensuring correctness even under partial failures, retries, and network interruptions.
+            The implementation includes full test coverage (journal posting, state transitions, outbox processing, and health monitoring).
+        </p>
+    </section>
+
+    <section id="features-objectives" aria-labelledby="h-features">
+        <h2 id="h-features">Features &amp; Objectives</h2>
+        <h3>Core Objectives</h3>
+        <ul>
+            <li><strong>Multi-step transitions</strong> (<code>reserve -&gt; lock -&gt; finalize</code>, and <code>release -&gt; revert</code>)</li>
+            <li><strong>Strong consistency</strong> across multiple accounts and journals</li>
+            <li><strong>Atomic cross-account updates</strong> using MongoDB transactions</li>
+            <li><strong>Event-driven outbox dispatch</strong> with retry and exponential backoff</li>
+            <li><strong>Idempotency</strong> to prevent double-reserves</li>
+            <li><strong>Chaos mode</strong> for simulating network failures</li>
+            <li><strong>Observability</strong> with structured logs, metrics, and health checks</li>
+        </ul>
+    </section>
+
+    <section id="state-machine" aria-labelledby="h-state">
+        <h2 id="h-state">State Machine &amp; Transitions</h2>
+        <p>Each ledger journal line describes a <strong>state transition</strong> on an account bucket.</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Transition</th>
+                <th>From -&gt; To</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr><td><code>reserve</code></td><td>available -&gt; pending</td><td>Hold funds for a potential transaction</td></tr>
+            <tr><td><code>lock</code></td><td>pending -&gt; escrow</td><td>Move held funds to system-controlled escrow</td></tr>
+            <tr><td><code>finalize</code></td><td>escrow -&gt; outflow</td><td>Complete payout / reduce liability</td></tr>
+            <tr><td><code>release</code></td><td>pending -&gt; available</td><td>Cancel hold and restore availability</td></tr>
+            <tr><td><code>revert</code></td><td>escrow -&gt; available</td><td>Cancel escrow and restore availability</td></tr>
+            </tbody>
+        </table>
+        <p class="small">Transitions are strictly validated by <code>src/domain/stateMachine.ts</code>.</p>
+    </section>
+
+    <section id="api-endpoints" aria-labelledby="h-api">
+        <h2 id="h-api">API Endpoints</h2>
+
+        <h3>POST <span class="pill">/journal</span></h3>
+        <p>Posts a new journal entry.</p>
+        <h4>Sample Request</h4>
+        <pre><code class="language-json">{
+  "journalId": "J23456",
+  "idempotencyKey": "unique-key-999",
+  "lines": [
+    {
+      "accountId": "USER_1",
+      "fromBucket": "available",
+      "toBucket": "pending",
+      "side": "debit",
+      "amount": { "currency": "USD", "amount": "150" },
+      "transition": "reserve"
+    },
+    {
+      "accountId": "ESCROW_POOL",
+      "fromBucket": "available",
+      "toBucket": "escrow",
+      "side": "credit",
+      "amount": { "currency": "USD", "amount": "150" },
+      "transition": "lock"
+    }
+  ]
+}</code></pre>
+        <h4>Behavior</h4>
+        <ul>
+            <li>Validates transitions against the state machine</li>
+            <li>Ensures the journal is <strong>balanced</strong> (total debit == total credit)</li>
+            <li>Enforces <strong>idempotency</strong> via <code>idempotencyKey</code></li>
+            <li>Performs atomic MongoDB transaction updates</li>
+            <li>Writes entries to <code>ledger_entries</code> (write-ahead log)</li>
+            <li>Enqueues a <strong>LedgerEvent.Posted</strong> in the outbox for async dispatch</li>
+        </ul>
+
+        <hr>
+
+        <h3>GET <span class="pill">/accounts/:id/history</span></h3>
+        <p>Returns all transitions for a given account.</p>
+        <h4>Sample Response</h4>
+        <pre><code class="language-json">{
+  "accountId": "USER_1",
+  "currency": "USD",
+  "history": [
+    { "transition": "reserve", "amount": "150", "timestamp": "2025-11-02T12:00:00Z" },
+    { "transition": "lock", "amount": "150", "timestamp": "2025-11-02T12:01:00Z" },
+    { "transition": "finalize", "amount": "150", "timestamp": "2025-11-02T12:05:00Z" }
+  ]
+}</code></pre>
+
+        <hr>
+
+        <h3>POST <span class="pill">/events</span></h3>
+        <p>Mock endpoint for event dispatch acknowledgements. Ensures <strong>exactly-once semantics</strong> by inserting an <code>events_acks</code> record per journal. Duplicates are safely ignored.</p>
+
+        <hr>
+
+        <h3>GET <span class="pill">/health</span></h3>
+        <p>Health check and observability endpoint.</p>
+        <h4>Sample Response</h4>
+        <pre><code class="language-json">{
+  "dbConnected": true,
+  "outboxQueue": 2,
+  "pendingRetries": 1,
+  "metrics": {
+    "ledger_journal_total": { "ok": 10, "fail": 1 },
+    "ledger_outbox_retries_total": { "success": 8, "retry": 2 }
+  },
+  "timestamp": "2025-11-02T12:00:00Z"
+}</code></pre>
+    </section>
+
+    <section id="outbox-processor" aria-labelledby="h-outbox">
+        <h2 id="h-outbox">Outbox Processor</h2>
+        <p>The outbox pattern guarantees reliable, exactly-once event delivery even in case of transaction or network failures.</p>
+        <h4>Behavior</h4>
+        <ul>
+            <li>Scans for due items (<code>status: pending</code>, <code>nextAttemptAt ≤ now</code>)</li>
+            <li>Dispatches events to <code>/events</code></li>
+            <li>Retries on failures with <strong>exponential backoff</strong></li>
+            <li>Marks items as <code>sent</code> on success</li>
+            <li>Records metrics for successes and retries</li>
+        </ul>
+        <h4>CLI / Background Runner</h4>
+        <pre><code class="language-bash">npm run outbox:process</code></pre>
+    </section>
+
+    <section id="chaos-mode" aria-labelledby="h-chaos">
+        <h2 id="h-chaos">Chaos Mode</h2>
+        <p>A chaos simulation is implemented via the <code>CHAOS_PROB</code> environment variable.</p>
+        <ul>
+            <li>Randomly throws errors during journal transactions</li>
+            <li>Ensures atomic rollback and recovery on retry</li>
+            <li>Demonstrated in tests (<code>J-CHAOS-1</code>)</li>
+        </ul>
+        <h4>Example</h4>
+        <pre><code class="language-bash">CHAOS_PROB=0.5 npm test</code></pre>
+    </section>
+
+    <section id="observability" aria-labelledby="h-observability">
+        <h2 id="h-observability">Observability</h2>
+        <p>Every operation emits:</p>
+        <ul>
+            <li><strong>Structured logs</strong> including <code>txId</code>, <code>idempotencyKey</code>, and <code>transition</code></li>
+            <li><strong>Metrics counters</strong>:
+                <ul>
+                    <li><code>ledger_journal_total{status="ok|fail"}</code></li>
+                    <li><code>ledger_outbox_retries_total{result="success|retry"}</code></li>
+                </ul>
+            </li>
+        </ul>
+        <p>The <code>/health</code> endpoint aggregates and reports key metrics.</p>
+    </section>
+
+    <section id="database-seeding" aria-labelledby="h-seeding">
+        <h2 id="h-seeding">Database Seeding (Demo Data)</h2>
+        <p>Before testing the API endpoints, you can populate the database with demo accounts using the built-in seed script.</p>
+        <h4>Run the seed command</h4>
+        <pre><code class="language-bash">npm run seed</code></pre>
+        <p>This command connects to the MongoDB instance and inserts the following accounts:</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Account ID</th>
+                <th>Currency</th>
+                <th>Buckets (available/pending/escrow/outflow)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr><td><code>USER_1</code></td><td>USD</td><td>200 / 0 / 0 / 0</td></tr>
+            <tr><td><code>ESCROW_POOL</code></td><td>USD</td><td>200 / 0 / 0 / 0</td></tr>
+            <tr><td><code>SYSTEM_OUTFLOW</code></td><td>USD</td><td>0 / 0 / 0 / 0</td></tr>
+            </tbody>
+        </table>
+        <h4>Purpose</h4>
+        <p>This provides initial balances, so you can immediately test the full journal transition flow:</p>
+        <pre><code>reserve → lock → finalize
+release → revert</code></pre>
+    </section>
+
+    <section id="quick-demo" aria-labelledby="h-demo">
+        <h2 id="h-demo">Quick Demo</h2>
+        <p>Below are simple <span class="kbd">curl</span> commands to try the flow locally (assuming <span class="kbd">npm run dev</span> is running and MongoDB is available).</p>
+
+        <h3>1) Reserve + Lock</h3>
+        <pre><code class="language-bash">curl -X POST http://localhost:3000/journal \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: &lt;YOUR_API_KEY&gt;" \
+  -d '{
+    "journalId": "J-DEMO-1",
+    "idempotencyKey": "idem-demo-1",
+    "lines": [
+      { "accountId": "USER_1", "fromBucket": "available", "toBucket": "pending", "side": "debit", "amount": { "currency": "USD", "amount": "50" }, "transition": "reserve" },
+      { "accountId": "ESCROW_POOL", "fromBucket": "available", "toBucket": "escrow", "side": "credit", "amount": { "currency": "USD", "amount": "50" }, "transition": "lock" }
+    ]
+  }'</code></pre>
+
+        <h3>2) Finalize</h3>
+        <pre><code class="language-bash">curl -X POST http://localhost:3000/journal \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: &lt;YOUR_API_KEY&gt;" \
+  -d '{
+    "journalId": "J-DEMO-2",
+    "idempotencyKey": "idem-demo-2",
+    "lines": [
+      { "accountId": "ESCROW_POOL", "fromBucket": "escrow", "toBucket": "outflow", "side": "credit", "amount": { "currency": "USD", "amount": "50" }, "transition": "finalize" },
+      { "accountId": "SYSTEM_OUTFLOW", "fromBucket": "available", "toBucket": "available", "side": "debit", "amount": { "currency": "USD", "amount": "50" }, "transition": "finalize" }
+    ]
+  }'</code></pre>
+
+        <h3>3) Check History</h3>
+        <pre><code class="language-bash">curl -s http://localhost:3000/accounts/USER_1/history \
+  -H "X-API-Key: &lt;YOUR_API_KEY&gt;" | jq .</code></pre>
+
+        <h3>4) Run Outbox Processor</h3>
+        <pre><code class="language-bash">npm run outbox:process</code></pre>
+
+        <h3>5) Health</h3>
+        <pre><code class="language-bash">curl -s http://localhost:3000/health \
+  -H "X-API-Key: &lt;YOUR_API_KEY&gt;" | jq .</code></pre>
+    </section>
+
+    <section id="running" aria-labelledby="h-running">
+        <h2 id="h-running">Running the Project</h2>
+
+        <h3>1) Prerequisites</h3>
+        <ul>
+            <li>Node.js &ge; 18</li>
+            <li>npm &ge; 9</li>
+            <li>MongoDB</li>
+        </ul>
+
+        <h3>2) Installation</h3>
+        <pre><code class="language-bash">git clone https://github.com/lpinkhard/advanced-ledger-challenge.git
+cd advanced-ledger-challenge
+npm install</code></pre>
+
+        <h3>3) Local Dev</h3>
+        <pre><code class="language-bash">npm run dev</code></pre>
+
+        <h4>.env</h4>
+        <pre><code>MONGODB_URI="mongodb://localhost:27017/ledger"
+DB_NAME="ledger"
+API_KEY="12345678"
+CHAOS_PROB="0.05"
+OUTBOX_TARGET="/events"</code></pre>
+
+        <h3>4) Tests</h3>
+        <pre><code class="language-bash">npm test</code></pre>
+
+        <p>Covers:</p>
+        <ul>
+            <li>Journal posting &amp; idempotency</li>
+            <li>State machine transitions</li>
+            <li>Outbox + retries/backoff</li>
+            <li>Chaos rollback &amp; recovery</li>
+            <li>Health endpoint</li>
+        </ul>
+    </section>
+
+    <section id="folder-structure" aria-labelledby="h-structure">
+        <h2 id="h-structure">Folder Structure</h2>
+        <pre><code>src/
+ ├─ api/                # Route handlers (journal, events, health)
+ ├─ domain/             # Core business logic & state machine
+ ├─ services/           # Journal/outbox/health services
+ ├─ lib/                # Database setup and helpers
+ └─ tests/              # Vitest test suites</code></pre>
+    </section>
+
+    <section id="alignment" aria-labelledby="h-alignment">
+        <h2 id="h-alignment">Alignment with Challenge Requirements</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Requirement</th>
+                <th>Implemented</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Multi-step transitions (<code>reserve</code>, <code>lock</code>, <code>finalize</code>, <code>release</code>, <code>revert</code>)</td>
+                <td><code>stateMachine.ts</code></td>
+            </tr>
+            <tr><td>Atomic transactions</td><td>MongoDB sessions</td></tr>
+            <tr><td>Idempotent journals</td><td><code>idempotencyKey</code> &amp; unique indexes</td></tr>
+            <tr><td>Write-ahead ledger entries</td><td><code>ledger_entries</code></td></tr>
+            <tr><td>Outbox dispatch + retry/backoff</td><td><code>processOutbox</code></td></tr>
+            <tr><td>Exactly-once event delivery</td><td><code>/events</code> + <code>events_acks</code></td></tr>
+            <tr><td>Chaos/failure simulation</td><td><code>CHAOS_PROB</code></td></tr>
+            <tr><td>Observability &amp; metrics</td><td><code>/health</code></td></tr>
+            <tr><td>End-to-end tests</td><td><code>tests/*.spec.ts</code></td></tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

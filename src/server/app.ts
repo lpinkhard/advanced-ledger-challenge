@@ -22,6 +22,8 @@ import healthHandler from "../../api/health";
 import dotenv from "dotenv";
 dotenv.config();
 
+import path from "node:path";
+
 // Config
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const ENABLE_OUTBOX_CRON = /^true$/i.test(process.env.ENABLE_OUTBOX_CRON || "false");
@@ -35,6 +37,14 @@ app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("combined"));
 app.use(rateLimit({ windowMs: 60_000, max: 120 }));
+
+const publicDir = path.join(__dirname, "../../public");
+app.use(express.static(publicDir));
+
+// Root: send index.html
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
 
 // Routes (wrapped)
 

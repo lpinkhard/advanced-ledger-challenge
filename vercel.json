@@ -1,20 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm ci && npm run build",
-  "framework": null,
-
-  "builds": [
-    { "src": "dist/api/**/*.js", "use": "@vercel/node@3" }
-  ],
-
   "routes": [
-    { "src": "^/journal$",                    "dest": "/dist/api/journal.js" },
-    { "src": "^/health$",                     "dest": "/dist/api/health.js" },
-    { "src": "^/events$",                     "dest": "/dist/api/events.js" },
-    { "src": "^/outbox/process$",             "dest": "/dist/api/outbox/process.js" },
-    { "src": "^/accounts/([^/]+)/history$",   "dest": "/dist/api/accounts/history.js?id=$1" }
+    { "src": "^/journal$", "dest": "api/journal.ts" },
+    { "src": "^/health$",  "dest": "api/health.ts" },
+    { "src": "^/events$",  "dest": "api/events.ts" },
+    { "src": "^/outbox/process$", "dest": "api/outbox/process.ts" },
+    { "src": "^/accounts/([^/]+)/history$", "dest": "api/accounts/history.ts?id=$1" },
+    { "src": "^/$", "dest": "/index.html" }
   ],
-
   "crons": [
     { "path": "/outbox/process", "schedule": "0 0 * * *" }
   ]
