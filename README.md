@@ -349,12 +349,12 @@ Covers:
 ## Folder Structure
 
 ```
+api/                    # Route handlers (journal, events, health)
 src/
- ├─ api/                # Route handlers (journal, events, health)
  ├─ domain/             # Core business logic & state machine
  ├─ services/           # Journal/outbox/health services
  ├─ lib/                # Database setup and helpers
- └─ tests/              # Vitest test suites
+tests/                  # Vitest test suites
 ```
 
 ---
