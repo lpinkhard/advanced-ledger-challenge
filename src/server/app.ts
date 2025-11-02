@@ -37,7 +37,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(morgan("combined"));
 app.use(rateLimit({ windowMs: 60_000, max: 120 }));
 
-const publicDir = path.join(__dirname, "../../public");
+const publicDir = path.join(process.cwd(), "public");
 app.use(express.static(publicDir));
 
 // Root: send index.html

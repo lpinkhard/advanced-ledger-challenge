@@ -1,7 +1,7 @@
 {
-  "name": "ledger",
+  "name": "advanced-ledger-challenge",
   "version": "1.0.0",
-  "description": "Advanced ledger challenge",
+  "description": "Advanced Ledger Challenge",
   "private": true,
   "author": "Lionel Pinkhard",
   "engines": {
