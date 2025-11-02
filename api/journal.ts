@@ -14,7 +14,7 @@ import {
   allowMethods,
   methodNotAllowed,
 } from "./_util";
-import { ZodError } from "zod";
+import { ZodError, type ZodIssue } from "zod";
 
 export const config = { runtime: "nodejs" };
 
@@ -42,7 +42,7 @@ export default async function handler(req: Request): Promise<Response> {
       return error(
         "Validation failed",
         422,
-        e.errors.map((iss) => ({
+        e.issues.map((iss: ZodIssue) => ({
           path: iss.path.join("."),
           message: iss.message,
           code: iss.code,

@@ -9,6 +9,7 @@ import { beforeAll, afterAll, afterEach, describe, it, expect } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { MongoClient, Db } from "mongodb";
 import { postJournal } from "../src/services/journalService";
+import type {AccountDoc, JournalDoc, LedgerEntryDoc, OutboxDoc} from "../src/domain/docs";
 
 let replset: MongoMemoryReplSet;
 let client: MongoClient;
@@ -19,13 +20,12 @@ async function seedAccounts(seed: Array<{
   currency: string;
   buckets: { available: number; pending: number; escrow: number; outflow: number };
 }>) {
-  await db.collection("accounts").insertMany(
-    seed.map((x) => ({ ...x, createdAt: new Date() }))
-  );
+  const docs: AccountDoc[] = seed.map((x) => ({ ...x, createdAt: new Date() }));
+  await db.collection<AccountDoc>("accounts").insertMany(docs);
 }
 
 async function acct(id: string) {
-  const doc = await db.collection("accounts").findOne({ _id: id });
+  const doc = await db.collection<AccountDoc>("accounts").findOne({ _id: id });
   return doc?.buckets ?? null;
 }
 
@@ -36,14 +36,14 @@ beforeAll(async () => {
   db = client.db("ledger_transitions");
   setTestDb(db);
 
-  await db.collection("journals").createIndexes([
+  await db.collection<JournalDoc>("journals").createIndexes([
     { key: { idempotencyKey: 1 }, unique: true, name: "uniq_idem" },
     { key: { journalId: 1 }, unique: true, name: "uniq_journal" },
   ]);
-  await db.collection("ledger_entries").createIndexes([
+  await db.collection<LedgerEntryDoc>("ledger_entries").createIndexes([
     { key: { accountId: 1, createdAt: -1 }, name: "by_acct_time" },
   ]);
-  await db.collection("outbox").createIndexes([
+  await db.collection<OutboxDoc>("outbox").createIndexes([
     { key: { status: 1, nextAttemptAt: 1 }, name: "dispatch_queue" },
   ]);
   await db.collection("events_acks").createIndexes([
