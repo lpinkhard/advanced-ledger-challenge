@@ -10,6 +10,7 @@ import {
   Db,
   Collection,
   ServerApiVersion,
+  Document,
 } from "mongodb";
 
 /** Global cache keys to survive across restarts */
@@ -274,7 +275,7 @@ export async function isMongoHealthy(): Promise<boolean> {
  * @param name - The MongoDB collection name.
  * @typeParam T - The document shape for the collection.
  */
-export async function getCollection<T = unknown>(
+export async function getCollection<T extends Document = Document>(
   name: string,
 ): Promise<Collection<T>> {
   const db = await getDb();

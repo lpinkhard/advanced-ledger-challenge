@@ -4,24 +4,9 @@
  * Reliable outbox dispatcher with exponential backoff and exactly-once semantics
  */
 
-import type { Db, Document, Filter, FindOneAndUpdateOptions, ObjectId, Sort } from "mongodb";
+import type { Db, Filter, FindOneAndUpdateOptions, ObjectId, Sort } from "mongodb";
 import { log, metrics } from "../util/log";
-
-/** Statuses for outbox items */
-export type OutboxStatus = "pending" | "processing" | "sent";
-
-/** Shape of an outbox document */
-export interface OutboxDoc extends Document {
-  _id: ObjectId;
-  journalId: string;
-  topic: string;
-  payload: unknown;
-  status: OutboxStatus;
-  attempts: number;
-  nextAttemptAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { OutboxDoc, OutboxStatus } from "../domain/docs";
 
 /** Configuration values for a single processing run */
 export interface OutboxProcessOptions {
@@ -229,7 +214,7 @@ export async function processOutbox(
 
     try {
       await dispatchEvent(targetUrl, doc, requestTimeoutMs);
-      await markSent(db, doc._id);
+      await markSent(db, doc._id!);
       sent++;
       metrics.incOutboxSuccess?.();
       log?.({ evt: "outbox.sent", journalId: doc.journalId, attempts: doc.attempts ?? 0 });

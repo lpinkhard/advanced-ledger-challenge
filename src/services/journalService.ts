@@ -4,7 +4,8 @@
  * Journal posting and account history services for the ledger.
  */
 
-import type { Db, ClientSession, WithId } from "mongodb";
+import type { Db, ClientSession, WithId, Filter } from "mongodb";
+import type { AccountDoc, LedgerEntryDoc, JournalDoc, OutboxDoc } from "../domain/docs";
 import {
   JournalSchema,
   type JournalInput,
@@ -29,27 +30,6 @@ export interface AccountHistory {
   accountId: string;
   currency: string;
   history: Array<{ transition: string; amount: string; timestamp: string }>;
-}
-
-async function ensureAccountExists(
-  db: Db,
-  session: ClientSession,
-  accountId: string,
-  currency: string
-) {
-  await db.collection("accounts").updateOne(
-    { accountId, currency },
-    {
-      $setOnInsert: {
-        accountId,
-        currency,
-        buckets: { available: 0, pending: 0, escrow: 0, outflow: 0 },
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    },
-    { upsert: true, session }
-  );
 }
 
 /**
@@ -96,7 +76,7 @@ export async function applyLineAtomic(
   }
 
   // ensure account exists
-  await db.collection("accounts").updateOne(
+  await db.collection<AccountDoc>("accounts").updateOne(
     { _id: accountId },
     {
       $setOnInsert: {
@@ -112,7 +92,7 @@ export async function applyLineAtomic(
 
   // Short-circuit no-ops
   if (fromBucket && toBucket && fromBucket === toBucket) {
-    await db.collection("accounts").updateOne(
+    await db.collection<AccountDoc>("accounts").updateOne(
       { _id: accountId },
       { $set: { updatedAt: new Date(), lastTxHint: "noop" } },
       { session }
@@ -136,7 +116,7 @@ export async function applyLineAtomic(
     predicate[`buckets.${fromBucket!}`] = { $gte: amtNum };
   }
 
-  const updateRes = await db.collection("accounts").updateOne(
+  const updateRes = await db.collection<AccountDoc>("accounts").updateOne(
     predicate,
     { $inc: inc, $set: { updatedAt: new Date() } },
     { session }
@@ -159,7 +139,7 @@ async function appendLedgerEntry(
   lineNo: number,
   line: LineInput
 ): Promise<void> {
-  await db.collection("ledger_entries").insertOne(
+  await db.collection<LedgerEntryDoc>("ledger_entries").insertOne(
     {
       journalId,
       lineNo,
@@ -184,7 +164,7 @@ async function enqueueOutboxPosted(
   session: ClientSession,
   journalId: string
 ): Promise<void> {
-  await db.collection("outbox").insertOne(
+  await db.collection<OutboxDoc>("outbox").insertOne(
     {
       journalId,
       topic: "LedgerEvent.Posted",
@@ -207,7 +187,7 @@ async function createJournalHeader(
   session: ClientSession,
   input: JournalInput
 ): Promise<void> {
-  await db.collection("journals").insertOne(
+  await db.collection<JournalDoc>("journals").insertOne(
     {
       journalId: input.journalId,
       idempotencyKey: input.idempotencyKey,
@@ -227,7 +207,7 @@ async function markJournalPosted(
   session: ClientSession,
   journalId: string
 ): Promise<void> {
-  await db.collection("journals").updateOne(
+  await db.collection<JournalDoc>("journals").updateOne(
     { journalId },
     { $set: { status: "posted" } },
     { session }
@@ -243,7 +223,7 @@ async function findExistingJournal(
   session: ClientSession,
   input: JournalInput
 ): Promise<WithId<any> | null> {
-  const existing = await db.collection("journals").findOne(
+  const existing = await db.collection<JournalDoc>("journals").findOne(
     {
       $or: [
         { idempotencyKey: input.idempotencyKey },
@@ -370,7 +350,7 @@ export async function accountHistory(
   if (currency) query.currency = currency;
 
   const items = await db
-    .collection("ledger_entries")
+    .collection<LedgerEntryDoc>("ledger_entries")
     .find(query)
     .sort({ createdAt: 1 })
     .toArray();
@@ -400,10 +380,9 @@ async function assertNoNegativeBuckets(
   // Keep this aligned with the predicate guard in applyLineAtomic
   const SYSTEM_OVERDRAFT_ACCOUNTS = new Set(["ESCROW_POOL"]);
 
-  const docs = await db
-    .collection("accounts")
-    .find({ _id: { $in: accountIds } }, { session })
-    .toArray();
+  const accountsCol = db.collection<AccountDoc>("accounts");
+  const filter: Filter<AccountDoc> = { _id: { $in: accountIds } };
+  const docs = await accountsCol.find(filter, { session }).toArray();
 
   for (const doc of docs) {
     if (SYSTEM_OVERDRAFT_ACCOUNTS.has(doc._id)) continue; // allowed to go negative

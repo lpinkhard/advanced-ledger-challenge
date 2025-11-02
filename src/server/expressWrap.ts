@@ -58,7 +58,7 @@ async function toFetchRequest(req: ExpressReq): Promise<Request> {
     } else if (typeof req.body === "string") {
       bodyInit = req.body;
     } else {
-      bodyInit = req;
+      bodyInit = req as unknown as BodyInit;
     }
   }
 
@@ -93,7 +93,6 @@ export function expressWrap(
       }
 
       const reader = body.getReader();
-      const encoder = new TextEncoder();
       const pull = async () => {
         const { value, done } = await reader.read();
         if (done) return res.end();
