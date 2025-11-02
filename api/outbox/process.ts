@@ -14,8 +14,6 @@ import {
   methodNotAllowed,
 } from "../_util";
 
-export const config = { runtime: "nodejs" };
-
 export default async function handler(req: Request): Promise<Response> {
   if (!allowMethods(req, ["POST"])) {
     return methodNotAllowed(["POST"]);

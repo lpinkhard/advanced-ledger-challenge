@@ -8,8 +8,6 @@ import { getDb, isMongoHealthy } from "../src/lib/mongo";
 import { buildHealthReport } from "../src/util/log";
 import { json, error, allowMethods, methodNotAllowed } from "./_util";
 
-export const config = { runtime: "nodejs" };
-
 /**
  * Route handler for `GET /health`
  */

@@ -16,8 +16,6 @@ import {
 } from "./_util";
 import { ZodError, type ZodIssue } from "zod";
 
-export const config = { runtime: "nodejs" };
-
 /**
  * Route handler for `POST /journal`
  */

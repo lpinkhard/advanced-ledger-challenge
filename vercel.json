@@ -4,21 +4,18 @@
   "framework": null,
 
   "builds": [
-    { "src": "dist/api/**/*.js", "use": "@vercel/node" }
+    { "src": "dist/api/**/*.js", "use": "@vercel/node@3" }
   ],
 
   "routes": [
-    { "src": "^/journal$", "dest": "dist/api/journal.js" },
-    { "src": "^/health$", "dest": "dist/api/health.js" },
-    { "src": "^/events$", "dest": "dist/api/events.js" },
-    { "src": "^/outbox/process$", "dest": "dist/api/outbox/process.js" },
-    { "src": "^/accounts/([^/]+)/history$", "dest": "dist/api/accounts/history.js?id=$1" }
+    { "src": "^/journal$",                    "dest": "/dist/api/journal.js" },
+    { "src": "^/health$",                     "dest": "/dist/api/health.js" },
+    { "src": "^/events$",                     "dest": "/dist/api/events.js" },
+    { "src": "^/outbox/process$",             "dest": "/dist/api/outbox/process.js" },
+    { "src": "^/accounts/([^/]+)/history$",   "dest": "/dist/api/accounts/history.js?id=$1" }
   ],
 
   "crons": [
-    {
-      "path": "/outbox/process",
-      "schedule": "0 0 * * *"
-    }
+    { "path": "/outbox/process", "schedule": "0 0 * * *" }
   ]
 }
