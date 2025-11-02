@@ -326,12 +326,13 @@ OUTBOX_TARGET="/events"</code></pre>
 
     <section id="folder-structure" aria-labelledby="h-structure">
         <h2 id="h-structure">Folder Structure</h2>
-        <pre><code>src/
+        <pre><code>api/                    # Route handlers (journal, events, health)
+src/
  ├─ api/                # Route handlers (journal, events, health)
  ├─ domain/             # Core business logic & state machine
  ├─ services/           # Journal/outbox/health services
  ├─ lib/                # Database setup and helpers
- └─ tests/              # Vitest test suites</code></pre>
+tests/                  # Vitest test suites</code></pre>
     </section>
 
     <section id="alignment" aria-labelledby="h-alignment">
